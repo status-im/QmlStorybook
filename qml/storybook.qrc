@@ -1,0 +1,45 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Storybook/CheckBoxFlowSelector.qml</file>
+        <file>Storybook/CompilationErrorsBox.qml</file>
+        <file>Storybook/FigmaImagesProxyModel.qml</file>
+        <file>Storybook/FigmaLinksCache.qml</file>
+        <file>Storybook/FigmaPreviewWindow.qml</file>
+        <file>Storybook/FigmaUtils.qml</file>
+        <file>Storybook/FilteredPagesList.qml</file>
+        <file>Storybook/FlickableImage.qml</file>
+        <file>Storybook/GenericListView.qml</file>
+        <file>Storybook/HotComponentFromSource.qml</file>
+        <file>Storybook/HotLoader.qml</file>
+        <file>Storybook/HotReloader.qml</file>
+        <file>Storybook/HotReloaderControls.qml</file>
+        <file>Storybook/ImageSelectPopup.qml</file>
+        <file>Storybook/ImagesGridView.qml</file>
+        <file>Storybook/ImagesNavigationLayout.qml</file>
+        <file>Storybook/InspectionItem.qml</file>
+        <file>Storybook/InspectionItemsList.qml</file>
+        <file>Storybook/InspectionPanel.qml</file>
+        <file>Storybook/InspectionUtils.qml</file>
+        <file>Storybook/InspectionWindow.qml</file>
+        <file>Storybook/LimitProxyModel.qml</file>
+        <file>Storybook/Logs.qml</file>
+        <file>Storybook/LogsAndControlsPanel.qml</file>
+        <file>Storybook/LogsView.qml</file>
+        <file>Storybook/NoFigmaTokenDialog.qml</file>
+        <file>Storybook/NothingToInspectDialog.qml</file>
+        <file>Storybook/PagesList.qml</file>
+        <file>Storybook/PageToolBar.qml</file>
+        <file>Storybook/PopupBackground.qml</file>
+        <file>Storybook/qmldir</file>
+        <file>Storybook/RadioButtonFlowSelector.qml</file>
+        <file>Storybook/SettingsLayout.qml</file>
+        <file>Storybook/SingleItemProxyModel.qml</file>
+        <file>Storybook/SourceCodeBox.qml</file>
+        <file>Storybook/StatusStatisticsDialog.qml</file>
+        <file>Storybook/StorybookUtils.qml</file>
+        <file>Storybook/TestRunnerController.qml</file>
+        <file>Storybook/TestRunnerControls.qml</file>
+        <file>Storybook/TestUtils.qml</file>
+        <file>Storybook/Storybook.qml</file>
+    </qresource>
+</RCC>
