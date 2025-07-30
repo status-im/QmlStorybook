@@ -42,11 +42,11 @@ ListView {
             radius: 3
 
             color: {
-                if (model.status === PagesModel.Good)
+                if (model.status === PagesModelEnums.Good)
                     return "green"
-                if (model.status === PagesModel.Decent)
+                if (model.status === PagesModelEnums.Decent)
                     return "orange"
-                if (model.status === PagesModel.Bad)
+                if (model.status === PagesModelEnums.Bad)
                     return "red"
 
                 return "gray"

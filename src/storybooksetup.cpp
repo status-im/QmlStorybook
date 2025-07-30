@@ -4,6 +4,7 @@
 #include "Storybook/directorieswatcher.h"
 #include "Storybook/figmalinks.h"
 #include "Storybook/pagesmodel.h"
+#include "Storybook/pagesmodelenums.h"
 #include "Storybook/sectionsdecoratormodel.h"
 #include "Storybook/testsrunner.h"
 
@@ -31,6 +32,10 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
 {
     static QString _pagesPath = pagesPath;
     Q_UNUSED(_pagesPath); // silence clazy
+
+    qmlRegisterUncreatableMetaObject(PagesModelEnums::staticMetaObject,
+                                     "Storybook", 1, 0, "PagesModelEnums",
+                                     "PagesModel enums");
 
     struct PagesModelInitialized : public PagesModel {
         explicit PagesModelInitialized(QObject *parent = nullptr)
