@@ -66,10 +66,6 @@ Control {
         }
     }
 
-    PagesModel {
-        id: pagesModel
-    }
-
     HotReloader {
         id: reloader
 
@@ -165,7 +161,7 @@ Control {
                         Layout.fillHeight: true
 
                         currentPage: d.currentPage
-                        model: pagesModel
+                        model: StorybookData.pagesModel
 
                         onPageSelected: (page) => d.currentPage = page
                         onStatusClicked: statusStatsDialog.open()
@@ -225,7 +221,7 @@ Control {
                     id: currentPageModelItem
 
                     model: SingleItemProxyModel {
-                        sourceModel: pagesModel
+                        sourceModel: StorybookData.pagesModel
                         roleName: "title"
                         value: d.currentPage
                     }
@@ -298,7 +294,7 @@ Control {
     StatusStatisticsDialog {
         id: statusStatsDialog
 
-        pagesModel: pagesModel
+        pagesModel: StorybookData.pagesModel
     }
 
     Component {

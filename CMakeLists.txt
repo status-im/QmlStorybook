@@ -29,6 +29,7 @@ qt_add_library(QmlStorybookLib
   src/modelutils.cpp
   src/pagesmodel.cpp
   src/sectionsdecoratormodel.cpp
+  src/storybookdata.cpp
   src/storybooksetup.cpp
   src/systemutils.cpp
   src/testsrunner.cpp
@@ -43,6 +44,7 @@ qt_add_library(QmlStorybookLib
   include/Storybook/pagesmodel.h
   include/Storybook/pagesmodelenums.h
   include/Storybook/sectionsdecoratormodel.h
+  include/Storybook/storybookdata.h
   include/Storybook/storybooksetup.h
   include/Storybook/systemutils.h
   include/Storybook/testsrunner.h
