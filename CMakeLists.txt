@@ -26,6 +26,7 @@ qt_add_library(QmlStorybookLib
   src/figmaio.cpp
   src/figmalinks.cpp
   src/figmalinksmodel.cpp
+  src/localpagessource.cpp
   src/modelutils.cpp
   src/pagesmodel.cpp
   src/qmlfilesserver.cpp
@@ -35,12 +36,14 @@ qt_add_library(QmlStorybookLib
   src/systemutils.cpp
   src/testsrunner.cpp
   # headers
+  include/Storybook/abstractpagessource.h
   include/Storybook/cachecleaner.h
   include/Storybook/directorieswatcher.h
   include/Storybook/directoryfileswatcher.h
   include/Storybook/figmaio.h
   include/Storybook/figmalinks.h
   include/Storybook/figmalinksmodel.h
+  include/Storybook/localpagessource.h
   include/Storybook/modelutils.h
   include/Storybook/pagesmodel.h
   include/Storybook/pagesmodelenums.h

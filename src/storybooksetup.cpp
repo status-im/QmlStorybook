@@ -3,6 +3,7 @@
 #include "Storybook/cachecleaner.h"
 #include "Storybook/directorieswatcher.h"
 #include "Storybook/figmalinks.h"
+#include "Storybook/localpagessource.h"
 #include "Storybook/pagesmodel.h"
 #include "Storybook/pagesmodelenums.h"
 #include "Storybook/sectionsdecoratormodel.h"
@@ -32,8 +33,10 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
                                    const QString &testsPath)
 {
     auto storybookDataFactory = [pagesPath](QQmlEngine*, QJSEngine*) {
-        auto pagesModel = new PagesModel(pagesPath);
+        auto source = new LocalPagesSource(pagesPath);
+        auto pagesModel = new PagesModel(source);
         auto storybookData = new StorybookData(pagesModel, pagesPath);
+        source->setParent(storybookData);
         pagesModel->setParent(storybookData);
 
         return storybookData;

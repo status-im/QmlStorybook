@@ -1,5 +1,5 @@
 #include "Storybook/pagesmodel.h"
-#include "Storybook/directoryfileswatcher.h"
+#include "Storybook/abstractpagessource.h"
 
 #include <QFileInfo>
 #include <QRegularExpression>
@@ -8,18 +8,18 @@ namespace {
 constexpr auto categoryUncategorized = "Uncategorized";
 }
 
-PagesModel::PagesModel(const QString &path, QObject *parent)
-    : QAbstractListModel{parent}, m_path{path},
-      m_pagesWatcher(new DirectoryFilesWatcher(
-                         path, QStringLiteral("*Page.qml"), this))
+PagesModel::PagesModel(const AbstractPagesSource* source, QObject *parent)
+    : QAbstractListModel{parent}, m_source(source)
 {
-    m_items = readMetadata(m_pagesWatcher->files());
+    if (!m_source)
+        return;
 
+    m_items = readMetadata(m_source->pages());
 
     for (const auto& item : std::as_const(m_items))
         setFigmaLinks(item.title, item.figmaLinks);
 
-    connect(m_pagesWatcher, &DirectoryFilesWatcher::filesChanged,
+    connect(m_source, &AbstractPagesSource::pagesChanged,
             this, &PagesModel::onPagesChanged);
 }
 
