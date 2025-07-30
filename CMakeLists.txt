@@ -41,6 +41,7 @@ qt_add_library(QmlStorybookLib
   include/Storybook/figmalinksmodel.h
   include/Storybook/modelutils.h
   include/Storybook/pagesmodel.h
+  include/Storybook/pagesmodelenums.h
   include/Storybook/sectionsdecoratormodel.h
   include/Storybook/storybooksetup.h
   include/Storybook/systemutils.h

@@ -100,9 +100,9 @@ Dialog {
             let { bad, decent, good, uncategorized } = aggr
 
             switch (value) {
-                case PagesModel.Bad: bad++; break
-                case PagesModel.Decent: decent++; break
-                case PagesModel.Good: good++; break
+                case PagesModelEnums.Bad: bad++; break
+                case PagesModelEnums.Decent: decent++; break
+                case PagesModelEnums.Good: good++; break
                 default: uncategorized++
             }
 

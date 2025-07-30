@@ -66,7 +66,7 @@ QString PagesModel::extractCategory(const QByteArray& content)
     return category.isEmpty() ? categoryUncategorized : category;
 }
 
-PagesModel::Status PagesModel::extractStatus(const QByteArray& content)
+PagesModelEnums::Status PagesModel::extractStatus(const QByteArray& content)
 {
     static QRegularExpression statusRegex(
                 "^//(\\s)*status:(.+)$", QRegularExpression::MultilineOption);
@@ -76,13 +76,13 @@ PagesModel::Status PagesModel::extractStatus(const QByteArray& content)
             ? statusMatch.captured(2).trimmed() : "";
 
     if (status == QStringLiteral("bad"))
-        return Bad;
+        return PagesModelEnums::Status::Bad;
     if (status == QStringLiteral("decent"))
-        return Decent;
+        return PagesModelEnums::Status::Decent;
     if (status == QStringLiteral("good"))
-        return Good;
+        return PagesModelEnums::Status::Good;
 
-    return Uncategorized;
+    return PagesModelEnums::Status::Uncategorized;
 }
 
 QStringList PagesModel::extractFigmaLinks(const QByteArray& content)

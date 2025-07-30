@@ -3,10 +3,8 @@
 #include <QAbstractListModel>
 #include <QDateTime>
 
-#include <QtQmlIntegration/qqmlintegration.h>
-
-
 #include "figmalinksmodel.h"
+#include "pagesmodelenums.h"
 
 class DirectoryFilesWatcher;
 
@@ -22,7 +20,6 @@ struct PagesModelItem {
 class PagesModel : public QAbstractListModel
 {
     Q_OBJECT
-    QML_ELEMENT
 
 public:
     explicit PagesModel(const QString &path, QObject *parent = nullptr);
@@ -33,15 +30,6 @@ public:
         StatusRole,
         FigmaRole
     };
-
-    enum Status : int {
-        Uncategorized = 0,
-        Bad,
-        Decent,
-        Good
-    };
-
-    Q_ENUM(Status)
 
     QHash<int, QByteArray> roleNames() const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -60,7 +48,7 @@ private:
     static void readMetadata(QList<PagesModelItem> &items);
 
     static QString extractCategory(const QByteArray& content);
-    static PagesModel::Status extractStatus(const QByteArray& content);
+    static PagesModelEnums::Status extractStatus(const QByteArray& content);
     static QStringList extractFigmaLinks(const QByteArray& content);
 
     void setFigmaLinks(const QString& title, const QStringList& links);
