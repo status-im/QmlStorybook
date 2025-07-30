@@ -9,7 +9,6 @@
 class AbstractPagesSource;
 
 struct PagesModelItem {
-    QString path;
     QDateTime lastModified;
     QString title;
     QString category;
@@ -39,13 +38,10 @@ private:
     void onPagesChanged(const QStringList& added, const QStringList& removed,
                         const QStringList& changed);
 
-    int getIndexByPath(const QString& path) const;
+    int getIndex(const QString& page) const;
 
-    static PagesModelItem readMetadata(const QString& path);
-    static QList<PagesModelItem> readMetadata(const QStringList& paths);
-
-    static void readMetadata(PagesModelItem &item);
-    static void readMetadata(QList<PagesModelItem> &items);
+    PagesModelItem readMetadata(const QString& page);
+    QList<PagesModelItem> readMetadata(const QStringList& pages);
 
     static QString extractCategory(const QByteArray& content);
     static PagesModelEnums::Status extractStatus(const QByteArray& content);
