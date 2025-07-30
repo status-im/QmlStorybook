@@ -6,7 +6,7 @@
 #include "figmalinksmodel.h"
 #include "pagesmodelenums.h"
 
-class DirectoryFilesWatcher;
+class AbstractPagesSource;
 
 struct PagesModelItem {
     QString path;
@@ -22,7 +22,7 @@ class PagesModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    explicit PagesModel(const QString &path, QObject *parent = nullptr);
+    explicit PagesModel(const AbstractPagesSource* source, QObject *parent = nullptr);
 
     enum Roles {
         TitleRole = Qt::UserRole + 1,
@@ -53,8 +53,7 @@ private:
 
     void setFigmaLinks(const QString& title, const QStringList& links);
 
-    QString m_path;
     QList<PagesModelItem> m_items;
     QMap<QString, FigmaLinksModel*> m_figmaSubmodels;
-    DirectoryFilesWatcher* m_pagesWatcher;
+    const AbstractPagesSource* m_source = nullptr;
 };
