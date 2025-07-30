@@ -11,6 +11,7 @@ ColumnLayout {
 
     property alias model: filteredModel.sourceModel
     property alias currentPage: pagesList.currentPage
+    property alias localPagesPath: pagesList.localPagesPath
 
     signal pageSelected(string page)
     signal statusClicked

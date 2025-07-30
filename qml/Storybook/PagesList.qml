@@ -9,6 +9,7 @@ ListView {
     clip: true
 
     property string currentPage
+    property string localPagesPath
 
     signal pageSelected(string page)
     signal sectionClicked(int index)
@@ -27,7 +28,7 @@ ListView {
         Drag.dragType: Drag.Automatic
         Drag.active: dragArea.drag.active
         Drag.mimeData: {
-            "text/uri-list": `file:${pagesFolder}/${model.title}Page.qml`
+            "text/uri-list": `file:${root.localPagesPath}/${model.title}Page.qml`
         }
 
         indicator: Rectangle {

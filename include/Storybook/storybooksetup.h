@@ -13,5 +13,5 @@ public:
                               const QString& testExecutable,
                               const QString& testsPath);
 
-    static void configureEngine(QQmlEngine* engine, const QString& pagesLocalPath);
+    static void configureEngine(QQmlEngine* engine);
 };

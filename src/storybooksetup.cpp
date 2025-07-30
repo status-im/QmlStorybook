@@ -33,7 +33,7 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
 {
     auto storybookDataFactory = [pagesPath](QQmlEngine*, QJSEngine*) {
         auto pagesModel = new PagesModel(pagesPath);
-        auto storybookData = new StorybookData(pagesModel);
+        auto storybookData = new StorybookData(pagesModel, pagesPath);
         pagesModel->setParent(storybookData);
 
         return storybookData;
@@ -76,11 +76,9 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
         "Storybook", 1, 0, "CacheCleaner", cleanerFactory);
 }
 
-void StorybookSetup::configureEngine(QQmlEngine* engine,
-                                     const QString& pagesPath)
+void StorybookSetup::configureEngine(QQmlEngine* engine)
 {
     static HotReloadUrlInterceptor interceptor;
 
     engine->addUrlInterceptor(&interceptor);
-    engine->rootContext()->setContextProperty(QStringLiteral("pagesFolder"), pagesPath);
 }
