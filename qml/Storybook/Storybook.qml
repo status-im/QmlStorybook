@@ -161,6 +161,7 @@ Control {
                         Layout.fillHeight: true
 
                         currentPage: d.currentPage
+                        localPagesPath: StorybookData.localPagesPath
                         model: StorybookData.pagesModel
 
                         onPageSelected: (page) => d.currentPage = page
@@ -173,7 +174,7 @@ Control {
                 Layout.fillWidth: true
                 text: "Open pages directory"
 
-                onClicked: Qt.openUrlExternally(Qt.resolvedUrl(pagesFolder))
+                onClicked: Qt.openUrlExternally(`file://${StorybookData.localPagesPath}`)
             }
         }
 
@@ -186,7 +187,7 @@ Control {
                 anchors.fill: parent
                 clip: true
 
-                source: reloader.reloading ? "" : `file:/${pagesFolder}/${d.currentPage}Page.qml`
+                source: reloader.reloading ? "" : `file:/${StorybookData.localPagesPath}/${d.currentPage}Page.qml`
                 asynchronous: !reloader.reloading && settingsLayout.loadAsynchronously
                 visible: status === Loader.Ready
 
