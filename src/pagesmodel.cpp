@@ -23,16 +23,12 @@ PagesModel::PagesModel(const AbstractPagesSource* source, QObject *parent)
             this, &PagesModel::onPagesChanged);
 }
 
-PagesModelItem PagesModel::readMetadata(const QString& path)
+PagesModelItem PagesModel::readMetadata(const QString& page)
 {
     PagesModelItem item;
-    item.path = path;
-    item.title = QFileInfo(path).fileName().chopped(
-                (QStringLiteral("Page.qml").size()));
+    item.title = page;
 
-    QFile file(path);
-    file.open(QIODevice::ReadOnly);
-    QByteArray content = file.readAll();
+    QByteArray content = m_source->page(page).toUtf8();
 
     item.category = extractCategory(content);
     item.status = extractStatus(content);
@@ -41,13 +37,13 @@ PagesModelItem PagesModel::readMetadata(const QString& path)
     return item;
 }
 
-QList<PagesModelItem> PagesModel::readMetadata(const QStringList &paths)
+QList<PagesModelItem> PagesModel::readMetadata(const QStringList &pages)
 {
     QList<PagesModelItem> metadata;
-    metadata.reserve(paths.size());
+    metadata.reserve(pages.size());
 
-    std::transform(paths.begin(), paths.end(), std::back_inserter(metadata),
-                   [](auto& path) {
+    std::transform(pages.begin(), pages.end(), std::back_inserter(metadata),
+                   [this](auto& path) {
         return readMetadata(path);
     });
 
@@ -107,8 +103,8 @@ void PagesModel::onPagesChanged(const QStringList& added,
                                 const QStringList& removed,
                                 const QStringList& changed)
 {
-    for (auto& path : removed) {
-        auto index = getIndexByPath(path);
+    for (auto& page : removed) {
+        auto index = getIndex(page);
 
         beginRemoveRows({}, index, index);
         m_items.removeAt(index);
@@ -127,11 +123,11 @@ void PagesModel::onPagesChanged(const QStringList& added,
         endInsertRows();
     }
 
-    for (auto& path : changed) {
-        auto index = getIndexByPath(path);
+    for (auto& page : changed) {
+        auto index = getIndex(page);
         const auto& previous = m_items.at(index);
 
-        PagesModelItem metadata = readMetadata(path);
+        PagesModelItem metadata = readMetadata(page);
         setFigmaLinks(metadata.title, metadata.figmaLinks);
 
         // For simplicity category and status change is handled by removing and
@@ -150,10 +146,10 @@ void PagesModel::onPagesChanged(const QStringList& added,
     }
 }
 
-int PagesModel::getIndexByPath(const QString& path) const
+int PagesModel::getIndex(const QString& page) const
 {
-    auto it = std::find_if(m_items.begin(), m_items.end(), [&path](auto& it) {
-        return it.path == path;
+    auto it = std::find_if(m_items.begin(), m_items.end(), [&page](auto& it) {
+        return it.title == page;
     });
     assert(it != m_items.end());
     return std::distance(m_items.begin(), it);

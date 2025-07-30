@@ -16,6 +16,9 @@ public:
     QString page(const QString &page) const override;
 
 private:
+    static QString extractPageName(const QString& path);
+    static QStringList extractPageNames(const QStringList& paths);
+
     QString m_path;
     DirectoryFilesWatcher* m_pagesWatcher;
 };
