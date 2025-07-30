@@ -6,6 +6,7 @@
 #include "Storybook/pagesmodel.h"
 #include "Storybook/pagesmodelenums.h"
 #include "Storybook/sectionsdecoratormodel.h"
+#include "Storybook/storybookdata.h"
 #include "Storybook/testsrunner.h"
 
 #include <QQmlAbstractUrlInterceptor>
@@ -30,20 +31,21 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
                                    const QString &testExecutable,
                                    const QString &testsPath)
 {
-    static QString _pagesPath = pagesPath;
-    Q_UNUSED(_pagesPath); // silence clazy
+    auto storybookDataFactory = [pagesPath](QQmlEngine*, QJSEngine*) {
+        auto pagesModel = new PagesModel(pagesPath);
+        auto storybookData = new StorybookData(pagesModel);
+        pagesModel->setParent(storybookData);
+
+        return storybookData;
+    };
+
+    qmlRegisterSingletonType<StorybookData>(
+        "Storybook", 1, 0, "StorybookData", storybookDataFactory);
 
     qmlRegisterUncreatableMetaObject(PagesModelEnums::staticMetaObject,
                                      "Storybook", 1, 0, "PagesModelEnums",
                                      "PagesModel enums");
 
-    struct PagesModelInitialized : public PagesModel {
-        explicit PagesModelInitialized(QObject *parent = nullptr)
-            : PagesModel(_pagesPath, parent) {
-        }
-    };
-
-    qmlRegisterType<PagesModelInitialized>("Storybook", 1, 0, "PagesModel");
     qmlRegisterType<SectionsDecoratorModel>("Storybook", 1, 0, "SectionsDecoratorModel");
     qmlRegisterUncreatableType<FigmaLinks>("Storybook", 1, 0, "FigmaLinks", {});
 
