@@ -26,9 +26,15 @@ ListView {
         width: ListView.view.width
 
         Drag.dragType: Drag.Automatic
-        Drag.active: dragArea.drag.active
         Drag.mimeData: {
             "text/uri-list": `file:${root.localPagesPath}/${model.title}Page.qml`
+        }
+
+        // workaround for https://bugreports.qt.io/browse/QTBUG-111789
+        // Drag.active: dragArea.drag.active
+        Binding on Drag.active {
+            value: dragArea.drag.active
+            delayed: true
         }
 
         indicator: Rectangle {
