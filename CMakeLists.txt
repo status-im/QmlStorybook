@@ -15,8 +15,8 @@ endif()
 
 option(QMLSTORYBOOK_BUILD_TESTS "Build tests" OFF)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Quick)
-find_package(Qt6 REQUIRED COMPONENTS Core Quick)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
+find_package(Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
 
 qt_add_library(QmlStorybookLib
   # sources
@@ -28,6 +28,7 @@ qt_add_library(QmlStorybookLib
   src/figmalinksmodel.cpp
   src/modelutils.cpp
   src/pagesmodel.cpp
+  src/qmlfilesserver.cpp
   src/sectionsdecoratormodel.cpp
   src/storybookdata.cpp
   src/storybooksetup.cpp
@@ -43,6 +44,7 @@ qt_add_library(QmlStorybookLib
   include/Storybook/modelutils.h
   include/Storybook/pagesmodel.h
   include/Storybook/pagesmodelenums.h
+  include/Storybook/qmlfilesserver.h
   include/Storybook/sectionsdecoratormodel.h
   include/Storybook/storybookdata.h
   include/Storybook/storybooksetup.h
@@ -84,7 +86,7 @@ if(NOT TARGET QtModelsToolkit)
 endif()
 
 target_link_libraries(QmlStorybookLib
-  PRIVATE Qt6::Core Qt6::Quick SortFilterProxyModel QtModelsToolkit)
+  PRIVATE Qt6::Core Qt6::Quick Qt6::HttpServer SortFilterProxyModel QtModelsToolkit)
 
 if(QMLSTORYBOOK_BUILD_TESTS)
   add_subdirectory(tests)
