@@ -1,5 +1,7 @@
 #include "Storybook/qmlfilesserver.h"
 
+#include "Storybook/directorieswatcher.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QHttpServer>
@@ -18,6 +20,12 @@ QmlFilesServer::QmlFilesServer(QStringList basePaths, QString pagesPath, QObject
 {
     if (!m_basePaths.contains(m_pagesPath))
         m_basePaths << m_pagesPath;
+
+    auto watcher = new DirectoriesWatcher(this);
+    watcher->addPaths(m_basePaths);
+
+    connect(watcher, &DirectoriesWatcher::changed, this,
+            [this]() { m_version++; });
 }
 
 void QmlFilesServer::start(quint16 port)
