@@ -30,6 +30,7 @@ qt_add_library(QmlStorybookLib
   src/modelutils.cpp
   src/pagesmodel.cpp
   src/qmlfilesserver.cpp
+  src/remotepagessource.cpp
   src/sectionsdecoratormodel.cpp
   src/storybookdata.cpp
   src/storybooksetup.cpp
@@ -48,6 +49,7 @@ qt_add_library(QmlStorybookLib
   include/Storybook/pagesmodel.h
   include/Storybook/pagesmodelenums.h
   include/Storybook/qmlfilesserver.h
+  include/Storybook/remotepagessource.h
   include/Storybook/sectionsdecoratormodel.h
   include/Storybook/storybookdata.h
   include/Storybook/storybooksetup.h
