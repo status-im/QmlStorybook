@@ -1,11 +1,11 @@
 #include "Storybook/storybooksetup.h"
 
-#include "Storybook/cachecleaner.h"
 #include "Storybook/directorieswatcher.h"
 #include "Storybook/figmalinks.h"
 #include "Storybook/localpagessource.h"
 #include "Storybook/pagesmodel.h"
 #include "Storybook/pagesmodelenums.h"
+#include "Storybook/qmlengineutils.h"
 #include "Storybook/sectionsdecoratormodel.h"
 #include "Storybook/storybookdata.h"
 #include "Storybook/testsrunner.h"
@@ -71,12 +71,12 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
     qmlRegisterSingletonType<TestsRunner>(
         "Storybook", 1, 0, "TestsRunner", runnerFactory);
 
-    auto cleanerFactory = [](QQmlEngine* engine, QJSEngine*) {
-        return new CacheCleaner(engine);
+    auto qmlEngineUtilsFactory = [](QQmlEngine* engine, QJSEngine*) {
+        return new QmlEngineUtils(engine);
     };
 
-    qmlRegisterSingletonType<CacheCleaner>(
-        "Storybook", 1, 0, "CacheCleaner", cleanerFactory);
+    qmlRegisterSingletonType<QmlEngineUtils>(
+        "Storybook", 1, 0, "QmlEngineUtils", qmlEngineUtilsFactory);
 }
 
 void StorybookSetup::configureEngine(QQmlEngine* engine)

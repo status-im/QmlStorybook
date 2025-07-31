@@ -20,7 +20,6 @@ find_package(Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
 
 qt_add_library(QmlStorybookLib
   # sources
-  src/cachecleaner.cpp
   src/directorieswatcher.cpp
   src/directoryfileswatcher.cpp
   src/figmaio.cpp
@@ -29,6 +28,7 @@ qt_add_library(QmlStorybookLib
   src/localpagessource.cpp
   src/modelutils.cpp
   src/pagesmodel.cpp
+  src/qmlengineutils.cpp
   src/qmlfilesserver.cpp
   src/remotepagessource.cpp
   src/sectionsdecoratormodel.cpp
@@ -38,7 +38,6 @@ qt_add_library(QmlStorybookLib
   src/testsrunner.cpp
   # headers
   include/Storybook/abstractpagessource.h
-  include/Storybook/cachecleaner.h
   include/Storybook/directorieswatcher.h
   include/Storybook/directoryfileswatcher.h
   include/Storybook/figmaio.h
@@ -48,6 +47,7 @@ qt_add_library(QmlStorybookLib
   include/Storybook/modelutils.h
   include/Storybook/pagesmodel.h
   include/Storybook/pagesmodelenums.h
+  include/Storybook/qmlengineutils.h
   include/Storybook/qmlfilesserver.h
   include/Storybook/remotepagessource.h
   include/Storybook/sectionsdecoratormodel.h
