@@ -1,7 +1,7 @@
 #include "Storybook/storybooksetup.h"
 
-#include "Storybook/directorieswatcher.h"
 #include "Storybook/figmalinks.h"
+#include "Storybook/localchangesnotifier.h"
 #include "Storybook/localpagessource.h"
 #include "Storybook/pagesmodel.h"
 #include "Storybook/pagesmodelenums.h"
@@ -52,16 +52,15 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
     qmlRegisterType<SectionsDecoratorModel>("Storybook", 1, 0, "SectionsDecoratorModel");
     qmlRegisterUncreatableType<FigmaLinks>("Storybook", 1, 0, "FigmaLinks", {});
 
-    auto watcherFactory = [watchedPaths](QQmlEngine*, QJSEngine*) {
-        auto watcher = new DirectoriesWatcher();
+    auto notifierFactory = [watchedPaths](QQmlEngine*, QJSEngine*) {
+        auto notifier = new LocalChangesNotifier();
+        notifier->addPaths(watchedPaths);
 
-        watcher->addPaths(watchedPaths);
-
-        return watcher;
+        return notifier;
     };
 
-    qmlRegisterSingletonType<DirectoriesWatcher>(
-        "Storybook", 1, 0, "SourceWatcher", watcherFactory);
+    qmlRegisterSingletonType<AbstractChangesNotifier>(
+        "Storybook", 1, 0, "ChangesNotifier", notifierFactory);
 
 
     auto runnerFactory = [testExecutable, testsPath](QQmlEngine*, QJSEngine*) {

@@ -15,7 +15,7 @@ QtObject {
     readonly property Connections _d: Connections {
         id: d
 
-        target: SourceWatcher
+        target: ChangesNotifier
 
         property Component component
         property var errors: null

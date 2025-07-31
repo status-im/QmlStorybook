@@ -1,6 +1,6 @@
 #include "Storybook/qmlfilesserver.h"
 
-#include "Storybook/directorieswatcher.h"
+#include "Storybook/localchangesnotifier.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -21,10 +21,10 @@ QmlFilesServer::QmlFilesServer(QStringList basePaths, QString pagesPath, QObject
     if (!m_basePaths.contains(m_pagesPath))
         m_basePaths << m_pagesPath;
 
-    auto watcher = new DirectoriesWatcher(this);
+    auto watcher = new LocalChangesNotifier(this);
     watcher->addPaths(m_basePaths);
 
-    connect(watcher, &DirectoriesWatcher::changed, this,
+    connect(watcher, &LocalChangesNotifier::changed, this,
             [this]() { m_version++; });
 }
 
