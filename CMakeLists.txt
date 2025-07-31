@@ -30,6 +30,7 @@ qt_add_library(QmlStorybookLib
   src/pagesmodel.cpp
   src/qmlengineutils.cpp
   src/qmlfilesserver.cpp
+  src/remotechangesnotifier.cpp
   src/remotepagessource.cpp
   src/sectionsdecoratormodel.cpp
   src/storybookdata.cpp
@@ -50,6 +51,7 @@ qt_add_library(QmlStorybookLib
   include/Storybook/pagesmodelenums.h
   include/Storybook/qmlengineutils.h
   include/Storybook/qmlfilesserver.h
+  include/Storybook/remotechangesnotifier.h
   include/Storybook/remotepagessource.h
   include/Storybook/sectionsdecoratormodel.h
   include/Storybook/storybookdata.h
