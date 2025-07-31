@@ -13,7 +13,7 @@ QtObject {
 
     function forceReload() {
         reloading = true
-        CacheCleaner.clearComponentCache()
+        QmlEngineUtils.clearComponentCache()
         reloading = false
         reloaded()
     }
