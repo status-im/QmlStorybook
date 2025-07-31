@@ -1,16 +1,16 @@
-#include "Storybook/directorieswatcher.h"
+#include "Storybook/localchangesnotifier.h"
 
 #include <QFileSystemWatcher>
 #include <QDirIterator>
 
-DirectoriesWatcher::DirectoriesWatcher(QObject *parent)
-    : QObject{parent}, fsWatcher(new QFileSystemWatcher(this))
+LocalChangesNotifier::LocalChangesNotifier(QObject *parent)
+    : AbstractChangesNotifier{parent}, fsWatcher(new QFileSystemWatcher(this))
 {
     connect(fsWatcher, &QFileSystemWatcher::directoryChanged,
-            this, &DirectoriesWatcher::changed);
+            this, &LocalChangesNotifier::changed);
 }
 
-void DirectoriesWatcher::addPaths(const QStringList &paths)
+void LocalChangesNotifier::addPaths(const QStringList &paths)
 {
     for (auto& path : paths) {
         QDirIterator it(path, QDir::AllDirs | QDir::NoDotAndDotDot,

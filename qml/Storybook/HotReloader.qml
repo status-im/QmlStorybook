@@ -19,7 +19,7 @@ QtObject {
     }
 
     readonly property Connections _d: Connections {
-        target: SourceWatcher
+        target: ChangesNotifier
         enabled: root.enabled
 
         function onChanged() {

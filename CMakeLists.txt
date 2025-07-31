@@ -20,11 +20,11 @@ find_package(Qt6 REQUIRED COMPONENTS Core Quick HttpServer)
 
 qt_add_library(QmlStorybookLib
   # sources
-  src/directorieswatcher.cpp
   src/directoryfileswatcher.cpp
   src/figmaio.cpp
   src/figmalinks.cpp
   src/figmalinksmodel.cpp
+  src/localchangesnotifier.cpp
   src/localpagessource.cpp
   src/modelutils.cpp
   src/pagesmodel.cpp
@@ -37,12 +37,13 @@ qt_add_library(QmlStorybookLib
   src/systemutils.cpp
   src/testsrunner.cpp
   # headers
+  include/Storybook/abstractchangesnotifier.h
   include/Storybook/abstractpagessource.h
-  include/Storybook/directorieswatcher.h
   include/Storybook/directoryfileswatcher.h
   include/Storybook/figmaio.h
   include/Storybook/figmalinks.h
   include/Storybook/figmalinksmodel.h
+  include/Storybook/localchangesnotifier.h
   include/Storybook/localpagessource.h
   include/Storybook/modelutils.h
   include/Storybook/pagesmodel.h

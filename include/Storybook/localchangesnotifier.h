@@ -1,18 +1,17 @@
 #pragma once
 
+#include "Storybook/abstractchangesnotifier.h"
+
 #include <QObject>
 
 class QFileSystemWatcher;
 
-class DirectoriesWatcher : public QObject
+class LocalChangesNotifier : public AbstractChangesNotifier
 {
     Q_OBJECT
 public:
-    explicit DirectoriesWatcher(QObject *parent = nullptr);
+    explicit LocalChangesNotifier(QObject *parent = nullptr);
     void addPaths(const QStringList &paths);
-
-signals:
-    void changed();
 
 private:
     QFileSystemWatcher* fsWatcher;
