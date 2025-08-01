@@ -9,14 +9,89 @@
 #include <QJsonObject>
 #include <QMimeDatabase>
 #include <QTcpServer>
+#include <QSet>
 
 #include <memory>
 
 using namespace Qt::Literals::StringLiterals;
 
-QmlFilesServer::QmlFilesServer(QStringList basePaths, QString pagesPath, QObject *parent)
+namespace {
+
+bool isRelativePathSafe(const QString &relativePath)
+{
+    const auto parts = relativePath.split('/', Qt::SkipEmptyParts);
+    return !parts.contains(u".."_s);
+}
+
+QString amendedQmldirContent(const QString& qmldirPath) {
+    QFileInfo qmldirInfo(qmldirPath);
+    QString dirPath = qmldirInfo.absolutePath();
+
+    QStringList qmldirLines;
+    if (qmldirInfo.exists() && qmldirInfo.isFile()) {
+        QFile qmldirFile(qmldirPath);
+        if (qmldirFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&qmldirFile);
+            while (!in.atEnd())
+                qmldirLines << in.readLine();
+            qmldirFile.close();
+        }
+    }
+
+    // Find version of the first QML module entry and if singleton is used
+    static const QRegularExpression entryRegex(
+        R"(^\s*(singleton\s+)?(\w+)\s+(\d+\.\d+)\s+(\S+\.qml)(?:\s+.*)?$)");
+
+    QString version = "1.0"; // fallback default
+    QString singletonKeyword;
+    QSet<QString> listedFiles;
+
+    for (auto& line : std::as_const(qmldirLines)) {
+        QRegularExpressionMatch m = entryRegex.match(line);
+        if (m.hasMatch()) {
+            if (version == "1.0")
+                version = m.captured(3);
+            if (singletonKeyword.isEmpty() && !m.captured(1).isEmpty())
+                singletonKeyword = m.captured(1); // e.g. "singleton "
+            listedFiles.insert(m.captured(4));
+        }
+    }
+
+    // List all QML files in the same directory as qmldir
+    QDir dir(dirPath);
+    QStringList qmlFiles = dir.entryList({"*.qml"}, QDir::Files);
+
+    // Find unlisted QML files
+    QSet<QString> qmlFilesSet(qmlFiles.begin(), qmlFiles.end());
+    QSet<QString> unlistedFiles = qmlFilesSet - listedFiles;
+
+    // If the file doesn't exist and there are no qml files, return empty string
+    if (qmldirLines.isEmpty() && unlistedFiles.isEmpty())
+        return {};
+
+    // Prepare new entries
+    QStringList newEntries;
+    for (auto& filename : std::as_const(unlistedFiles)) {
+        QString typeName = QFileInfo(filename).baseName();
+        newEntries << QString("%1 %2 %3").arg(typeName, version, filename);
+    }
+    newEntries.sort();
+
+    QStringList amendedLines = qmldirLines;
+    if (!amendedLines.isEmpty() && !amendedLines.last().isEmpty() && !newEntries.isEmpty())
+        amendedLines << ""; // Ensure a newline before appending
+    amendedLines.append(newEntries);
+
+    return amendedLines.join('\n');
+}
+
+} // unnamed namespace
+
+QmlFilesServer::QmlFilesServer(QStringList basePaths, QString pagesPath,
+                               bool amendQmldirs, QObject *parent)
     : QObject{parent}, m_server(new QHttpServer(this)),
-    m_basePaths(std::move(basePaths)), m_pagesPath(std::move(pagesPath))
+    m_basePaths(std::move(basePaths)), m_pagesPath(std::move(pagesPath)),
+    m_amendQmldirs(amendQmldirs)
 {
     if (!m_basePaths.contains(m_pagesPath))
         m_basePaths << m_pagesPath;
@@ -71,7 +146,25 @@ void QmlFilesServer::start(quint16 port)
                 "400 Directory traversal is not allowed",
                 QHttpServerResponder::StatusCode::BadRequest);
 
-        QString filePath = findFirstExistingFile(relativePath);
+        QFileInfo info(relativePath);
+
+        if (info.fileName() == u"qmldir"_s) {
+            QString path = findFirstExistingSourceDir(
+               QFileInfo(QUrl::fromPercentEncoding(relativePath.toUtf8())).path());
+
+            QString body = amendedQmldirContent(QDir(path).filePath(u"qmldir"_s));
+
+            if(body.isEmpty()) {
+                return QHttpServerResponse(
+                    "404 Not Found", QHttpServerResponder::StatusCode::NotFound);
+            }
+
+            return QHttpServerResponse("text/plain"_ba,
+                body.toUtf8(), QHttpServerResponder::StatusCode::Ok);
+        }
+
+        QString filePath = findFirstExistingFile(
+            QUrl::fromPercentEncoding(relativePath.toUtf8()));
 
         if (filePath.isEmpty()) {
             return QHttpServerResponse(
@@ -107,21 +200,30 @@ void QmlFilesServer::start(quint16 port)
     tcpserver.release();
 }
 
-bool QmlFilesServer::isRelativePathSafe(const QString &relativePath)
+QString QmlFilesServer::findFirstExistingSourceDir(const QString &relativePath) const
 {
-    const auto parts = relativePath.split('/', Qt::SkipEmptyParts);
-    return !parts.contains(u".."_s);
+    for (auto& base : m_basePaths)
+    {
+        QString fullDirPath = QDir(base).absoluteFilePath(relativePath);
+
+        if (QFileInfo::exists(fullDirPath) && QFileInfo(fullDirPath).isDir())
+        {
+            if (!QDir(fullDirPath).entryList({u"*.qml"_s, u"qmldir"_s},
+                                             QDir::Files).isEmpty())
+                return fullDirPath;
+        }
+    }
+    return {};
 }
 
 QString QmlFilesServer::findFirstExistingFile(const QString &relativePath) const
 {
     for (auto& base : m_basePaths)
     {
-        QString fullPath = QDir(base).absoluteFilePath(
-            QUrl::fromPercentEncoding(relativePath.toUtf8()));
+        QString fullPath = QDir(base).absoluteFilePath(relativePath);
 
         if (QFileInfo::exists(fullPath) && QFileInfo(fullPath).isFile())
             return fullPath;
     }
-    return QString();
+    return {};
 }
