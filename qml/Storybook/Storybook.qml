@@ -187,14 +187,58 @@ Control {
                 anchors.fill: parent
                 clip: true
 
-                source: reloader.reloading ? "" : `file:/${StorybookData.localPagesPath}/${d.currentPage}Page.qml`
-                asynchronous: !reloader.reloading && settingsLayout.loadAsynchronously
+                function remoteLoad(page) {
+                    if (viewLoader.sourceComponent) {
+                        viewLoader.sourceComponent.destroy()
+                        viewLoader.sourceComponent = null
+                    }
+
+                    QmlEngineUtils.clearComponentCache()
+
+                    const url = `http://localhost:8080/${d.currentPage}Page.qml`
+                    const cmp = Qt.createComponent(url)
+
+                    if (settingsLayout.loadAsynchronously) {
+                        viewLoader.sourceComponent = cmp
+                    } else {
+                        cmp.statusChanged.connect(() => {
+                            if (cmp.status === Component.Ready) {
+                                viewLoader.sourceComponent = cmp
+                            } else if (cmp.status === Component.Error) {
+                                viewLoader.sourceComponent = cmp
+                            }
+                        })
+                    }
+                }
+
+                Component.onCompleted: {
+                    if (StorybookData.mode === StorybookData.Local) {
+                        source = Qt.binding(() => reloader.reloading
+                                            ? ""
+                                            : `file:/${StorybookData.localPagesPath}/${d.currentPage}Page.qml`)
+                        asynchronous = Qt.binding(() => !reloader.reloading && settingsLayout.loadAsynchronously)
+                    } else {
+                        reloader.reloadingChanged.connect(() => {
+                            if (reloader.reloading)
+                                return
+
+                            remoteLoad(d.currentPage)
+                        })
+                        d.currentPageChanged.connect(() => remoteLoad(d.currentPage))
+                        reloader.reloadingChanged()
+                    }
+                }
+
                 visible: status === Loader.Ready
 
                 // force reload when `asynchronous` changes
                 onAsynchronousChanged: {
-                    active = false
-                    active = true
+                    if (StorybookData.mode === StorybookData.Local) {
+                        active = false
+                        active = true
+                    } else {
+                        reloader.reloadingChanged()
+                    }
                 }
             }
 
