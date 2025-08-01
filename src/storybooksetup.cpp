@@ -6,6 +6,8 @@
 #include "Storybook/pagesmodel.h"
 #include "Storybook/pagesmodelenums.h"
 #include "Storybook/qmlengineutils.h"
+#include "Storybook/remotechangesnotifier.h"
+#include "Storybook/remotepagessource.h"
 #include "Storybook/sectionsdecoratormodel.h"
 #include "Storybook/storybookdata.h"
 #include "Storybook/testsrunner.h"
@@ -15,6 +17,8 @@
 #include <QQmlEngine>
 
 #include <qqml.h>
+
+namespace {
 
 class HotReloadUrlInterceptor : public QQmlAbstractUrlInterceptor {
     unsigned int counter = 0;
@@ -27,15 +31,42 @@ class HotReloadUrlInterceptor : public QQmlAbstractUrlInterceptor {
     }
 };
 
-void StorybookSetup::registerTypes(const QStringList &watchedPaths,
-                                   const QString &pagesPath,
-                                   const QString &testExecutable,
-                                   const QString &testsPath)
+void registerTypesCommon(const QString &testExecutable,
+                         const QString &testsPath) {
+    qmlRegisterUncreatableMetaObject(PagesModelEnums::staticMetaObject,
+                                     "Storybook", 1, 0, "PagesModelEnums",
+                                     "PagesModel enums");
+
+    qmlRegisterType<SectionsDecoratorModel>("Storybook", 1, 0, "SectionsDecoratorModel");
+    qmlRegisterUncreatableType<FigmaLinks>("Storybook", 1, 0, "FigmaLinks", {});
+
+    auto qmlEngineUtilsFactory = [](QQmlEngine* engine, QJSEngine*) {
+        return new QmlEngineUtils(engine);
+    };
+
+    qmlRegisterSingletonType<QmlEngineUtils>(
+        "Storybook", 1, 0, "QmlEngineUtils", qmlEngineUtilsFactory);
+
+    auto runnerFactory = [testExecutable, testsPath](QQmlEngine*, QJSEngine*) {
+        return new TestsRunner(testExecutable, testsPath);
+    };
+
+    qmlRegisterSingletonType<TestsRunner>(
+        "Storybook", 1, 0, "TestsRunner", runnerFactory);
+}
+
+} // unnamed namespace
+
+void StorybookSetup::registerTypesLocal(const QStringList &watchedPaths,
+                                        const QString &pagesPath,
+                                        const QString &testExecutable,
+                                        const QString &testsPath)
 {
     auto storybookDataFactory = [pagesPath](QQmlEngine*, QJSEngine*) {
         auto source = new LocalPagesSource(pagesPath);
         auto pagesModel = new PagesModel(source);
-        auto storybookData = new StorybookData(pagesModel, pagesPath, StorybookData::Local);
+        auto storybookData = new StorybookData(pagesModel, pagesPath,
+                                               StorybookData::Local);
         source->setParent(storybookData);
         pagesModel->setParent(storybookData);
 
@@ -44,13 +75,6 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
 
     qmlRegisterSingletonType<StorybookData>(
         "Storybook", 1, 0, "StorybookData", storybookDataFactory);
-
-    qmlRegisterUncreatableMetaObject(PagesModelEnums::staticMetaObject,
-                                     "Storybook", 1, 0, "PagesModelEnums",
-                                     "PagesModel enums");
-
-    qmlRegisterType<SectionsDecoratorModel>("Storybook", 1, 0, "SectionsDecoratorModel");
-    qmlRegisterUncreatableType<FigmaLinks>("Storybook", 1, 0, "FigmaLinks", {});
 
     auto notifierFactory = [watchedPaths](QQmlEngine*, QJSEngine*) {
         auto notifier = new LocalChangesNotifier();
@@ -62,25 +86,40 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
     qmlRegisterSingletonType<AbstractChangesNotifier>(
         "Storybook", 1, 0, "ChangesNotifier", notifierFactory);
 
-
-    auto runnerFactory = [testExecutable, testsPath](QQmlEngine*, QJSEngine*) {
-        return new TestsRunner(testExecutable, testsPath);
-    };
-
-    qmlRegisterSingletonType<TestsRunner>(
-        "Storybook", 1, 0, "TestsRunner", runnerFactory);
-
-    auto qmlEngineUtilsFactory = [](QQmlEngine* engine, QJSEngine*) {
-        return new QmlEngineUtils(engine);
-    };
-
-    qmlRegisterSingletonType<QmlEngineUtils>(
-        "Storybook", 1, 0, "QmlEngineUtils", qmlEngineUtilsFactory);
+    registerTypesCommon(testExecutable, testsPath);
 }
 
-void StorybookSetup::configureEngine(QQmlEngine* engine)
+void StorybookSetup::registerTypesRemote(const QUrl& versionUrl,
+                                         const QUrl& queryUrl,
+                                         const QUrl& pageAccessBaseUrl)
 {
-    static HotReloadUrlInterceptor interceptor;
+    auto storybookDataFactory = [queryUrl, pageAccessBaseUrl](QQmlEngine*, QJSEngine*) {
+        auto source = new RemotePagesSource(queryUrl, pageAccessBaseUrl);
+        auto pagesModel = new PagesModel(source);
+        auto storybookData = new StorybookData(pagesModel, "", StorybookData::Remote);
+        source->setParent(storybookData);
+        pagesModel->setParent(storybookData);
 
-    engine->addUrlInterceptor(&interceptor);
+        return storybookData;
+    };
+
+    qmlRegisterSingletonType<StorybookData>(
+        "Storybook", 1, 0, "StorybookData", storybookDataFactory);
+
+    auto notifierFactory = [versionUrl](QQmlEngine*, QJSEngine*) {
+        return new RemoteChangesNotifier(versionUrl);
+    };
+
+    qmlRegisterSingletonType<AbstractChangesNotifier>(
+        "Storybook", 1, 0, "ChangesNotifier", notifierFactory);
+
+    registerTypesCommon("", "");
+}
+
+void StorybookSetup::configureEngine(QQmlEngine* engine, bool local)
+{
+    if (local) {
+        static HotReloadUrlInterceptor interceptor;
+        engine->addUrlInterceptor(&interceptor);
+    }
 }
