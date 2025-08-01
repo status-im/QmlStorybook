@@ -35,7 +35,7 @@ void StorybookSetup::registerTypes(const QStringList &watchedPaths,
     auto storybookDataFactory = [pagesPath](QQmlEngine*, QJSEngine*) {
         auto source = new LocalPagesSource(pagesPath);
         auto pagesModel = new PagesModel(source);
-        auto storybookData = new StorybookData(pagesModel, pagesPath);
+        auto storybookData = new StorybookData(pagesModel, pagesPath, StorybookData::Local);
         source->setParent(storybookData);
         pagesModel->setParent(storybookData);
 
