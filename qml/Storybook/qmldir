@@ -6,8 +6,6 @@ FigmaPreviewWindow 1.0 FigmaPreviewWindow.qml
 FilteredPagesList 1.0 FilteredPagesList.qml
 FlickableImage 1.0 FlickableImage.qml
 GenericListView 1.0 GenericListView.qml
-HotComponentFromSource 1.0 HotComponentFromSource.qml
-HotLoader 1.0 HotLoader.qml
 HotReloaderControls 1.0 HotReloaderControls.qml
 ImageSelectPopup 1.0 ImageSelectPopup.qml
 ImagesGridView 1.0 ImagesGridView.qml
