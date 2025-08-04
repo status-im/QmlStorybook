@@ -16,9 +16,53 @@ Control {
 
         property string currentPage: settings.value("currentPage") ?? "Playground"
 
+        // The remote server accepts urls of the following form:
+        // `http://localhost:8080/<dummy>/<path to file>` where the dummy is
+        // is expected to be integer and is ignored. The purpose is to generate
+        // unique prefix after the code is changed and therefore avoid fetching
+        // components from chace
+        property int remoteVersionTag: 0
+
+        signal reloadRequested
+
         onCurrentPageChanged: {
             testsReRunTimer.restart()
             settings.setValue("currentPage", currentPage)
+
+            loadPage(d.currentPage)
+        }
+
+        onReloadRequested: {
+            if (StorybookData.mode === StorybookData.Local) {
+                viewLoader.active = false
+                viewLoader.asynchronous = false
+                viewLoader.source = ""
+                QmlEngineUtils.clearComponentCache()
+            } else {
+                // remove old url prefix and set the new one to avoid fetching
+                // from cache
+                QmlEngineUtils.removeImportPath(`http://localhost:8080/${d.remoteVersionTag}`)
+                d.remoteVersionTag++
+                QmlEngineUtils.addImportPath(`http://localhost:8080/${d.remoteVersionTag}`)
+            }
+
+            loadPage(d.currentPage)
+        }
+
+        function loadPage(page) {
+            if (StorybookData.mode === StorybookData.Local) {
+                viewLoader.source = `file:/${StorybookData.localPagesPath}/${d.currentPage}Page.qml`
+                viewLoader.asynchronous = settingsLayout.loadAsynchronously
+                viewLoader.active = true
+            } else {
+                const url = `http://localhost:8080/${d.remoteVersionTag}/${d.currentPage}Page.qml`
+
+                if (settingsLayout.loadAsynchronously)
+                    viewLoader.source = url
+                else
+                    bufferLoader.source = url
+
+            }
         }
 
         function activateInspection(item) {
@@ -66,14 +110,12 @@ Control {
         }
     }
 
-    HotReloader {
-        id: reloader
+    Connections {
+        target: ChangesNotifier
+        enabled: hotReloaderControls.autoReloadEnabled
 
-        enabled: hotReloaderControls.enabled
-
-        onReloaded: {
-            hotReloaderControls.notifyReload()
-            testsReRunTimer.restart()
+        function onChanged() {
+            d.reloadRequested()
         }
     }
 
@@ -149,7 +191,8 @@ Control {
 
                         Layout.fillWidth: true
 
-                        onForceReloadClicked: reloader.forceReload()
+                        onForceReloadClicked: d.reloadRequested()
+                        onAutoReloadEnabledChanged: d.reloadRequested()
                     }
 
                     MenuSeparator {
@@ -181,65 +224,30 @@ Control {
         Page {
             SplitView.fillWidth: true
 
+            // helper loader to simulate synchronous loading when using remote
+            // schema. The goal is to do asynchronous loading there before the
+            // source is set to the final loader where the component is displayed.
+            Loader {
+                id: bufferLoader
+
+                onStatusChanged: {
+                    if (bufferLoader.status === Loader.Ready
+                            || bufferLoader.status === Loader.Error) {
+                        viewLoader.source = source
+                        bufferLoader.source = ""
+                    }
+                }
+
+                visible: false
+            }
+
             Loader {
                 id: viewLoader
 
                 anchors.fill: parent
                 clip: true
 
-                function remoteLoad(page) {
-                    if (viewLoader.sourceComponent) {
-                        viewLoader.sourceComponent.destroy()
-                        viewLoader.sourceComponent = null
-                    }
-
-                    QmlEngineUtils.clearComponentCache()
-
-                    const url = `http://localhost:8080/${d.currentPage}Page.qml`
-                    const cmp = Qt.createComponent(url)
-
-                    if (settingsLayout.loadAsynchronously) {
-                        viewLoader.sourceComponent = cmp
-                    } else {
-                        cmp.statusChanged.connect(() => {
-                            if (cmp.status === Component.Ready) {
-                                viewLoader.sourceComponent = cmp
-                            } else if (cmp.status === Component.Error) {
-                                viewLoader.sourceComponent = cmp
-                            }
-                        })
-                    }
-                }
-
-                Component.onCompleted: {
-                    if (StorybookData.mode === StorybookData.Local) {
-                        source = Qt.binding(() => reloader.reloading
-                                            ? ""
-                                            : `file:/${StorybookData.localPagesPath}/${d.currentPage}Page.qml`)
-                        asynchronous = Qt.binding(() => !reloader.reloading && settingsLayout.loadAsynchronously)
-                    } else {
-                        reloader.reloadingChanged.connect(() => {
-                            if (reloader.reloading)
-                                return
-
-                            remoteLoad(d.currentPage)
-                        })
-                        d.currentPageChanged.connect(() => remoteLoad(d.currentPage))
-                        reloader.reloadingChanged()
-                    }
-                }
-
-                visible: status === Loader.Ready
-
-                // force reload when `asynchronous` changes
-                onAsynchronousChanged: {
-                    if (StorybookData.mode === StorybookData.Local) {
-                        active = false
-                        active = true
-                    } else {
-                        reloader.reloadingChanged()
-                    }
-                }
+                asynchronous: settingsLayout.loadAsynchronously
             }
 
             BusyIndicator {
@@ -313,6 +321,8 @@ Control {
             id: settingsLayout
 
             width: parent.width
+
+            onLoadAsynchronouslyChanged: d.reloadRequested()
         }
     }
 
@@ -367,7 +377,7 @@ Control {
         property alias loadAsynchronously: settingsLayout.loadAsynchronously
         property alias runTestsAutomatically: settingsLayout.runTestsAutomatically
         property alias darkMode: darkModeCheckBox.checked
-        property alias hotReloading: hotReloaderControls.enabled
+        property alias hotReloading: hotReloaderControls.autoReloadEnabled
         property alias figmaToken: settingsLayout.figmaToken
         property alias windowAlwaysOnTop: windowAlwaysOnTopCheckBox.checked
 

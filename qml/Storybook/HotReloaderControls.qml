@@ -7,7 +7,7 @@ Item {
 
     implicitHeight: row.implicitHeight
 
-    property alias enabled: hotReloadingCheckBox.checked
+    property alias autoReloadEnabled: autoReloadCheckBox.checked
 
     signal forceReloadClicked
 
@@ -22,11 +22,11 @@ Item {
         anchors.right: parent.right
 
         CheckBox {
-            id: hotReloadingCheckBox
+            id: autoReloadCheckBox
 
             Layout.fillWidth: true
 
-            text: "Hot reloading"
+            text: "Auto reload"
         }
 
         Button {

@@ -11,7 +11,6 @@
         <file>Storybook/GenericListView.qml</file>
         <file>Storybook/HotComponentFromSource.qml</file>
         <file>Storybook/HotLoader.qml</file>
-        <file>Storybook/HotReloader.qml</file>
         <file>Storybook/HotReloaderControls.qml</file>
         <file>Storybook/ImageSelectPopup.qml</file>
         <file>Storybook/ImagesGridView.qml</file>
