@@ -9,8 +9,6 @@
         <file>Storybook/FilteredPagesList.qml</file>
         <file>Storybook/FlickableImage.qml</file>
         <file>Storybook/GenericListView.qml</file>
-        <file>Storybook/HotComponentFromSource.qml</file>
-        <file>Storybook/HotLoader.qml</file>
         <file>Storybook/HotReloaderControls.qml</file>
         <file>Storybook/ImageSelectPopup.qml</file>
         <file>Storybook/ImagesGridView.qml</file>
@@ -26,19 +24,19 @@
         <file>Storybook/LogsView.qml</file>
         <file>Storybook/NoFigmaTokenDialog.qml</file>
         <file>Storybook/NothingToInspectDialog.qml</file>
-        <file>Storybook/PagesList.qml</file>
         <file>Storybook/PageToolBar.qml</file>
+        <file>Storybook/PagesList.qml</file>
         <file>Storybook/PopupBackground.qml</file>
-        <file>Storybook/qmldir</file>
         <file>Storybook/RadioButtonFlowSelector.qml</file>
         <file>Storybook/SettingsLayout.qml</file>
         <file>Storybook/SingleItemProxyModel.qml</file>
         <file>Storybook/SourceCodeBox.qml</file>
         <file>Storybook/StatusStatisticsDialog.qml</file>
+        <file>Storybook/Storybook.qml</file>
         <file>Storybook/StorybookUtils.qml</file>
         <file>Storybook/TestRunnerController.qml</file>
         <file>Storybook/TestRunnerControls.qml</file>
         <file>Storybook/TestUtils.qml</file>
-        <file>Storybook/Storybook.qml</file>
+        <file>Storybook/qmldir</file>
     </qresource>
 </RCC>
