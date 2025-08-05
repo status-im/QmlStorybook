@@ -14,6 +14,7 @@ ToolBar {
 
     signal figmaPreviewClicked
     signal inspectClicked
+    signal backClicked
 
     RowLayout {
         anchors.fill: parent
@@ -56,6 +57,16 @@ ToolBar {
 
         Item {
             Layout.fillWidth: true
+        }
+
+
+        ToolButton {
+            text: "🔙"
+
+            visible: root.mobile
+            font.pixelSize: 20
+
+            onClicked: root.backClicked()
         }
 
         RowLayout {
