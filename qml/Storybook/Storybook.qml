@@ -11,6 +11,9 @@ Control {
     readonly property alias currentPage: d.currentPage
     readonly property alias darkMode: darkModeCheckBox.checked
 
+    readonly property bool mobile: Qt.platform.os === "ios" ||
+                                   Qt.platform.os === "android"
+
     QtObject {
         id: d
 
@@ -47,6 +50,7 @@ Control {
             }
 
             loadPage(d.currentPage)
+            hotReloaderControls.notifyReload()
         }
 
         function loadPage(page) {
@@ -168,6 +172,7 @@ Control {
                         id: windowAlwaysOnTopCheckBox
 
                         Layout.fillWidth: true
+                        visible: !root.mobile
 
                         text: "Always on top"
                         onCheckedChanged: {
@@ -215,6 +220,7 @@ Control {
 
             Button {
                 Layout.fillWidth: true
+                visible: !root.mobile
                 text: "Open pages directory"
 
                 onClicked: Qt.openUrlExternally(`file://${StorybookData.localPagesPath}`)
@@ -269,6 +275,7 @@ Control {
                                  ? currentPageModelItem.object.figma.count : 0
 
                 testRunnerController: testRunnerController
+                mobile: root.mobile
 
                 Instantiator {
                     id: currentPageModelItem
@@ -321,6 +328,9 @@ Control {
             id: settingsLayout
 
             width: parent.width
+
+            showFigmaSettings: !root.mobile
+            showTestsSettings: !root.mobile
 
             onLoadAsynchronouslyChanged: d.reloadRequested()
         }

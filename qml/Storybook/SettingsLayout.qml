@@ -3,9 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 ColumnLayout {
+    id: root
+
     property alias loadAsynchronously: loadAsyncCheckBox.checked
     property alias runTestsAutomatically: runTestsAutoCheckBox.checked
     property alias figmaToken: figmaTokenTextInput.text
+
+    property bool showFigmaSettings
+    property bool showTestsSettings
 
     CheckBox {
         id: loadAsyncCheckBox
@@ -19,6 +24,7 @@ ColumnLayout {
         id: runTestsAutoCheckBox
 
         Layout.fillWidth: true
+        visible: root.showTestsSettings
 
         text: "Run tests automatically"
         checked: true
@@ -28,6 +34,7 @@ ColumnLayout {
         Layout.fillWidth: true
 
         title: "Figma token"
+        visible: root.showFigmaSettings
 
         ColumnLayout {
             anchors.fill: parent

@@ -8,6 +8,8 @@ ToolBar {
     property string componentName
     property int figmaPagesCount: 0
 
+    property bool mobile
+
     required property TestRunnerController testRunnerController
 
     signal figmaPreviewClicked
@@ -21,7 +23,8 @@ ToolBar {
         }
 
         TextField {
-            text: `pages/${root.componentName}Page.qml`
+            text: root.mobile ? root.componentName
+                              : `pages/${root.componentName}Page.qml`
             horizontalAlignment: Qt.AlignHCenter
             verticalAlignment: Qt.AlignVCenter
 
@@ -32,6 +35,8 @@ ToolBar {
 
         ToolButton {
             text: "📋"
+
+            visible: !root.mobile
 
             ToolTip.timeout: 2000
             ToolTip.text: "Component name copied to the clipboard"
@@ -53,79 +58,83 @@ ToolBar {
             Layout.fillWidth: true
         }
 
-        ToolSeparator {}
+        RowLayout {
+            visible: !root.mobile
 
-        TestRunnerControls {
-            id: testRunnerControls
+            ToolSeparator {}
 
-            readonly property string testFileName: `tst_${root.componentName}.qml`
+            TestRunnerControls {
+                id: testRunnerControls
 
-            onTestFileNameChanged: {
-                if (testRunnerController.running)
-                    testRunnerController.abort()
+                readonly property string testFileName: `tst_${root.componentName}.qml`
 
-                testRunnerControls.mode = TestRunnerControls.Mode.Base
-            }
+                onTestFileNameChanged: {
+                    if (testRunnerController.running)
+                        testRunnerController.abort()
 
-            Connections {
-                target: testRunnerController
-
-                function onStarted() {
-                    testRunnerControls.mode = TestRunnerControls.Mode.InProgress
+                    testRunnerControls.mode = TestRunnerControls.Mode.Base
                 }
 
-                function onFinished(failedTests, aborted, crashed) {
-                    if (testRunnerControls.mode !== TestRunnerControls.Mode.InProgress)
-                        return
+                Connections {
+                    target: testRunnerController
 
-                    if (aborted) {
-                        testRunnerControls.mode = TestRunnerControls.Mode.Aborted
-                        return
+                    function onStarted() {
+                        testRunnerControls.mode = TestRunnerControls.Mode.InProgress
                     }
 
-                    if (crashed) {
-                        testRunnerControls.mode = TestRunnerControls.Mode.Crashed
-                        return
+                    function onFinished(failedTests, aborted, crashed) {
+                        if (testRunnerControls.mode !== TestRunnerControls.Mode.InProgress)
+                            return
+
+                        if (aborted) {
+                            testRunnerControls.mode = TestRunnerControls.Mode.Aborted
+                            return
+                        }
+
+                        if (crashed) {
+                            testRunnerControls.mode = TestRunnerControls.Mode.Crashed
+                            return
+                        }
+
+                        testRunnerControls.mode = failedTests
+                                ? TestRunnerControls.Mode.Failed
+                                : TestRunnerControls.Mode.Success
+
+                        testRunnerControls.numberOfFailedTests = failedTests
                     }
-
-                    testRunnerControls.mode = failedTests
-                            ? TestRunnerControls.Mode.Failed
-                            : TestRunnerControls.Mode.Success
-
-                    testRunnerControls.numberOfFailedTests = failedTests
                 }
+
+                onRunClicked: {
+                    const testsCount = testRunnerController.getTestsCount(testFileName)
+
+                    if (testsCount === 0)
+                        return noTestsDialog.open()
+
+                    testRunnerController.runTests(testFileName)
+                }
+
+                onAbortClicked: testRunnerController.abort()
             }
 
-            onRunClicked: {
-                const testsCount = testRunnerController.getTestsCount(testFileName)
+            ToolSeparator {}
 
-                if (testsCount === 0)
-                    return noTestsDialog.open()
+            ToolButton {
+                id: openFigmaButton
 
-                testRunnerController.runTests(testFileName)
+                text: `Figma designs (${root.figmaPagesCount})`
+
+                onClicked: root.figmaPreviewClicked()
             }
 
-            onAbortClicked: testRunnerController.abort()
-        }
+            ToolSeparator {}
 
-        ToolSeparator {}
+            ToolButton {
+                text: "Inspect (Ctrl+Shift+I)"
 
-        ToolButton {
-            id: openFigmaButton
+                Layout.rightMargin: parent.spacing
 
-            text: `Figma designs (${root.figmaPagesCount})`
-
-            onClicked: root.figmaPreviewClicked()
-        }
-
-        ToolSeparator {}
-
-        ToolButton {
-            text: "Inspect (Ctrl+Shift+I)"
-
-            Layout.rightMargin: parent.spacing
-
-            onClicked: root.inspectClicked()
+                onClicked: root.inspectClicked()
+            }
         }
     }
 
