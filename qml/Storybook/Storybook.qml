@@ -146,166 +146,207 @@ Control {
         }
     }
 
-    contentItem: SplitView {
-        anchors.fill: parent
+    ColumnLayout {
+        id: pagesListAndControls
 
-        ColumnLayout {
-            SplitView.preferredWidth: 270
+        SplitView.preferredWidth: 270
 
-            Pane {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+        Pane {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
 
-                ColumnLayout {
-                    width: parent.width
-                    height: parent.height
+            ColumnLayout {
+                width: parent.width
+                height: parent.height
 
-                    Button {
-                        Layout.fillWidth: true
+                Button {
+                    Layout.fillWidth: true
 
-                        text: "Settings"
+                    text: "Settings"
 
-                        onClicked: settingsPopup.open()
-                    }
+                    onClicked: settingsPopup.open()
+                }
 
-                    CheckBox {
-                        id: windowAlwaysOnTopCheckBox
+                CheckBox {
+                    id: windowAlwaysOnTopCheckBox
 
-                        Layout.fillWidth: true
-                        visible: !root.mobile
+                    Layout.fillWidth: true
+                    visible: !root.mobile
 
-                        text: "Always on top"
-                        onCheckedChanged: {
-                            if (checked)
-                                root.ApplicationWindow.window.flags |= Qt.WindowStaysOnTopHint
-                            else
-                                root.ApplicationWindow.window.flags &= ~Qt.WindowStaysOnTopHint
-                        }
-                    }
-
-                    CheckBox {
-                        id: darkModeCheckBox
-
-                        Layout.fillWidth: true
-
-                        text: "Dark mode"
-                    }
-
-                    HotReloaderControls {
-                        id: hotReloaderControls
-
-                        Layout.fillWidth: true
-
-                        onForceReloadClicked: d.reloadRequested()
-                        onAutoReloadEnabledChanged: d.reloadRequested()
-                    }
-
-                    MenuSeparator {
-                        Layout.fillWidth: true
-                    }
-
-                    FilteredPagesList {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        currentPage: d.currentPage
-                        localPagesPath: StorybookData.localPagesPath
-                        model: StorybookData.pagesModel
-
-                        onPageSelected: (page) => d.currentPage = page
-                        onStatusClicked: statusStatsDialog.open()
+                    text: "Always on top"
+                    onCheckedChanged: {
+                        if (checked)
+                            root.ApplicationWindow.window.flags |= Qt.WindowStaysOnTopHint
+                        else
+                            root.ApplicationWindow.window.flags &= ~Qt.WindowStaysOnTopHint
                     }
                 }
-            }
 
-            Button {
-                Layout.fillWidth: true
-                visible: !root.mobile
-                text: "Open pages directory"
+                CheckBox {
+                    id: darkModeCheckBox
 
-                onClicked: Qt.openUrlExternally(`file://${StorybookData.localPagesPath}`)
+                    Layout.fillWidth: true
+
+                    text: "Dark mode"
+                }
+
+                HotReloaderControls {
+                    id: hotReloaderControls
+
+                    Layout.fillWidth: true
+
+                    onForceReloadClicked: d.reloadRequested()
+                    onAutoReloadEnabledChanged: d.reloadRequested()
+                }
+
+                MenuSeparator {
+                    Layout.fillWidth: true
+                }
+
+                FilteredPagesList {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+
+                    currentPage: d.currentPage
+                    localPagesPath: StorybookData.localPagesPath
+                    model: StorybookData.pagesModel
+
+                    onPageSelected: (page) => {
+                        d.currentPage = page
+                        swipeView.currentIndex = 1
+                    }
+
+                    onStatusClicked: statusStatsDialog.open()
+                }
             }
         }
 
-        Page {
-            SplitView.fillWidth: true
+        Button {
+            Layout.fillWidth: true
+            visible: !root.mobile
+            text: "Open pages directory"
 
-            // helper loader to simulate synchronous loading when using remote
-            // schema. The goal is to do asynchronous loading there before the
-            // source is set to the final loader where the component is displayed.
-            Loader {
-                id: bufferLoader
+            onClicked: Qt.openUrlExternally(`file://${StorybookData.localPagesPath}`)
+        }
+    }
 
-                onStatusChanged: {
-                    if (bufferLoader.status === Loader.Ready
-                            || bufferLoader.status === Loader.Error) {
-                        viewLoader.source = source
-                        bufferLoader.source = ""
-                    }
+    Page {
+        id: pageContentPanel
+
+        SplitView.fillWidth: true
+
+        // helper loader to simulate synchronous loading when using remote
+        // schema. The goal is to do asynchronous loading there before the
+        // source is set to the final loader where the component is displayed.
+        Loader {
+            id: bufferLoader
+
+            onStatusChanged: {
+                if (bufferLoader.status === Loader.Ready
+                        || bufferLoader.status === Loader.Error) {
+                    viewLoader.source = source
+                    bufferLoader.source = ""
+                }
+            }
+
+            visible: false
+        }
+
+        Loader {
+            id: viewLoader
+
+            anchors.fill: parent
+            clip: true
+
+            asynchronous: settingsLayout.loadAsynchronously
+        }
+
+        BusyIndicator {
+            anchors.centerIn: parent
+            visible: viewLoader.status === Loader.Loading
+        }
+
+        Label {
+            anchors.centerIn: parent
+            visible: viewLoader.status === Loader.Error
+            text: "Loading page failed"
+        }
+
+        footer: PageToolBar {
+            id: pageToolBar
+
+            componentName: d.currentPage
+            figmaPagesCount: currentPageModelItem.object
+                             ? currentPageModelItem.object.figma.count : 0
+
+            testRunnerController: testRunnerController
+            mobile: root.mobile
+
+            Instantiator {
+                id: currentPageModelItem
+
+                model: SingleItemProxyModel {
+                    sourceModel: StorybookData.pagesModel
+                    roleName: "title"
+                    value: d.currentPage
                 }
 
-                visible: false
+                delegate: QtObject {
+                    readonly property string title: model.title
+                    readonly property var figma: model.figma
+                }
             }
 
-            Loader {
-                id: viewLoader
-
-                anchors.fill: parent
-                clip: true
-
-                asynchronous: settingsLayout.loadAsynchronously
-            }
-
-            BusyIndicator {
-                anchors.centerIn: parent
-                visible: viewLoader.status === Loader.Loading
-            }
-
-            Label {
-                anchors.centerIn: parent
-                visible: viewLoader.status === Loader.Error
-                text: "Loading page failed"
-            }
-
-            footer: PageToolBar {
-                id: pageToolBar
-
-                componentName: d.currentPage
-                figmaPagesCount: currentPageModelItem.object
-                                 ? currentPageModelItem.object.figma.count : 0
-
-                testRunnerController: testRunnerController
-                mobile: root.mobile
-
-                Instantiator {
-                    id: currentPageModelItem
-
-                    model: SingleItemProxyModel {
-                        sourceModel: StorybookData.pagesModel
-                        roleName: "title"
-                        value: d.currentPage
-                    }
-
-                    delegate: QtObject {
-                        readonly property string title: model.title
-                        readonly property var figma: model.figma
-                    }
+            onFigmaPreviewClicked: {
+                if (!settingsLayout.figmaToken) {
+                    noFigmaTokenDialog.open()
+                    return
                 }
 
-                onFigmaPreviewClicked: {
-                    if (!settingsLayout.figmaToken) {
-                        noFigmaTokenDialog.open()
-                        return
-                    }
-
-                    figmaWindow.createObject(root, {
-                        figmaModel: currentPageModelItem.object.figma,
-                        pageTitle: currentPageModelItem.object.title
-                    })
-                }
-
-                onInspectClicked: d.performInspection()
+                figmaWindow.createObject(root, {
+                    figmaModel: currentPageModelItem.object.figma,
+                    pageTitle: currentPageModelItem.object.title
+                })
             }
+
+            onInspectClicked: d.performInspection()
+            onBackClicked: swipeView.currentIndex = 0
+        }
+    }
+
+    contentItem: Item {
+        anchors.fill: parent
+
+        SplitView {
+            anchors.fill: parent
+            visible: !root.mobile
+
+            LayoutItemProxy {
+                SplitView.preferredWidth: 270
+
+                target: pagesListAndControls
+            }
+
+            LayoutItemProxy {
+                target: pageContentPanel
+            }
+        }
+
+        SwipeView {
+            id: swipeView
+
+            anchors.fill: parent
+            visible: root.mobile
+
+            LayoutItemProxy {
+                target: pagesListAndControls
+            }
+
+            LayoutItemProxy {
+                target: pageContentPanel
+            }
+
+            Component.onCompleted: currentIndex = 1
         }
     }
 
