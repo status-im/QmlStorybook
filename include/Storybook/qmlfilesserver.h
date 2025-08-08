@@ -11,6 +11,9 @@ public:
     explicit QmlFilesServer(QStringList basePaths, QString pagesPath,
                             bool amendQmldirs = true, QObject *parent = nullptr);
 
+    void setFileSelectors(const QStringList& selectors);
+    const QStringList& fileSelectors() const;
+
     bool start(quint16 port);
 
 private:
@@ -22,4 +25,6 @@ private:
     QStringList m_basePaths;
     QString m_pagesPath;
     bool m_amendQmldirs = true;
+
+    QStringList m_fileSelectors;
 };
