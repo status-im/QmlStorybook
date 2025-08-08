@@ -103,10 +103,20 @@ QmlFilesServer::QmlFilesServer(QStringList basePaths, QString pagesPath,
             [this]() { m_version++; });
 }
 
+void QmlFilesServer::setFileSelectors(const QStringList& selectors)
+{
+    m_fileSelectors = selectors;
+}
+
+const QStringList& QmlFilesServer::fileSelectors() const
+{
+    return m_fileSelectors;
+}
+
 bool QmlFilesServer::start(quint16 port)
 {
     m_server->route(u"/version"_s, QHttpServerRequest::Method::Get,
-                   [this] { return QString::number(m_version); });
+                    [this] { return QString::number(m_version); });
 
     m_server->route(u"/pages"_s, QHttpServerRequest::Method::Get, [this] {
 
@@ -121,13 +131,13 @@ bool QmlFilesServer::start(quint16 port)
                        std::back_inserter(files),
                        [] (auto &info) {
 
-            return QJsonObject {
-                {
-                    { u"page"_s, info.fileName() },
-                    { u"timestamp"_s, info.lastModified().toMSecsSinceEpoch() }
-                }
-            };
-        });
+                           return QJsonObject {
+                               {
+                                   { u"page"_s, info.fileName() },
+                                   { u"timestamp"_s, info.lastModified().toMSecsSinceEpoch() }
+                               }
+                           };
+                       });
 
         return files;
     });
@@ -150,7 +160,7 @@ bool QmlFilesServer::start(quint16 port)
 
         if (info.fileName() == u"qmldir"_s) {
             QString path = findFirstExistingSourceDir(
-               QFileInfo(QUrl::fromPercentEncoding(relativePath.toUtf8())).path());
+                QFileInfo(QUrl::fromPercentEncoding(relativePath.toUtf8())).path());
 
             QString body = amendedQmldirContent(QDir(path).filePath(u"qmldir"_s));
 
@@ -160,7 +170,7 @@ bool QmlFilesServer::start(quint16 port)
             }
 
             return QHttpServerResponse("text/plain"_ba,
-                body.toUtf8(), QHttpServerResponder::StatusCode::Ok);
+                                       body.toUtf8(), QHttpServerResponder::StatusCode::Ok);
         }
 
         QString filePath = findFirstExistingFile(
@@ -220,11 +230,29 @@ QString QmlFilesServer::findFirstExistingSourceDir(const QString &relativePath) 
 
 QString QmlFilesServer::findFirstExistingFile(const QString &relativePath) const
 {
+    auto valid = [](auto path) {
+        QFileInfo info(path);
+        return info.exists() && info.isFile();
+    };
+
+    QFileInfo info(relativePath);
+    QString relativeDir = info.path();
+    QString file = info.fileName();
+
     for (auto& base : m_basePaths)
     {
+        for (const auto& selector : m_fileSelectors) {
+            QString withSelector = QDir::cleanPath(relativeDir + "/" +
+                                                   selector + "/" + file);
+            QString fullPath = QDir(base).absoluteFilePath(withSelector);
+
+            if (valid(fullPath))
+                return fullPath;
+        }
+
         QString fullPath = QDir(base).absoluteFilePath(relativePath);
 
-        if (QFileInfo::exists(fullPath) && QFileInfo(fullPath).isFile())
+        if (valid(fullPath))
             return fullPath;
     }
     return {};
