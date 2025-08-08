@@ -103,7 +103,7 @@ QmlFilesServer::QmlFilesServer(QStringList basePaths, QString pagesPath,
             [this]() { m_version++; });
 }
 
-void QmlFilesServer::start(quint16 port)
+bool QmlFilesServer::start(quint16 port)
 {
     m_server->route(u"/version"_s, QHttpServerRequest::Method::Get,
                    [this] { return QString::number(m_version); });
@@ -193,11 +193,13 @@ void QmlFilesServer::start(quint16 port)
         !m_server->bind(tcpserver.get()))
     {
         qWarning() << "Failed to start server on port" << port;
-        return;
+        return false;
     }
 
     qDebug() << "Listening on port" << tcpserver->serverPort();
     tcpserver.release();
+
+    return true;
 }
 
 QString QmlFilesServer::findFirstExistingSourceDir(const QString &relativePath) const

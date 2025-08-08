@@ -11,7 +11,7 @@ public:
     explicit QmlFilesServer(QStringList basePaths, QString pagesPath,
                             bool amendQmldirs = true, QObject *parent = nullptr);
 
-    void start(quint16 port);
+    bool start(quint16 port);
 
 private:
     QString findFirstExistingSourceDir(const QString &relativePath) const;
