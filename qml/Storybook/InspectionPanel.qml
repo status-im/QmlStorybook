@@ -11,8 +11,8 @@ Item {
 
     readonly property ListModel model: ListModel {}
 
-    implicitWidth: image.implicitWidth
-    implicitHeight: image.implicitHeight
+    implicitWidth: sourceItem.width
+    implicitHeight: sourceItem.height
 
     signal clicked(int index)
 
@@ -28,6 +28,9 @@ Item {
 
     Image {
         id: image
+        anchors.fill: parent
+        fillMode: Image.PreserveAspectFit
+        sourceSize: Qt.size(sourceItem.width, sourceItem.height)
     }
 
     function itemsDepthFirst(root) {
