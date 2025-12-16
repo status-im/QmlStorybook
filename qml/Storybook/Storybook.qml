@@ -11,9 +11,12 @@ Control {
     readonly property alias currentPage: d.currentPage
     readonly property alias darkMode: darkModeCheckBox.checked
 
+    property alias pageOverlay: layoutOverlayProxy.target
+
+    readonly property alias currentPageItem: viewLoader.item
+
     readonly property bool mobile: Qt.platform.os === "ios" ||
                                    Qt.platform.os === "android"
-
     QtObject {
         id: d
 
@@ -270,6 +273,12 @@ Control {
             anchors.centerIn: parent
             visible: viewLoader.status === Loader.Error
             text: "Loading page failed"
+        }
+
+        LayoutItemProxy {
+            anchors.fill: parent
+
+            id: layoutOverlayProxy
         }
 
         footer: PageToolBar {
