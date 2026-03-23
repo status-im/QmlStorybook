@@ -87,7 +87,7 @@ if(NOT TARGET QtModelsToolkit)
   FetchContent_Declare(
     QtModelsToolkit
     GIT_REPOSITORY https://github.com/status-im/QtModelsToolkit.git
-    GIT_TAG 99588ada4371dc639c46836b0fca1a880428ef7c
+    GIT_TAG b249dc22be1e1e728acce90065f943d7db3636e5
   )
 
   FetchContent_MakeAvailable(QtModelsToolkit)
