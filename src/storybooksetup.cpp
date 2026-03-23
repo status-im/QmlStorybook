@@ -20,6 +20,7 @@
 
 namespace {
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 11, 0)
 class HotReloadUrlInterceptor : public QQmlAbstractUrlInterceptor {
     unsigned int counter = 0;
 
@@ -30,6 +31,7 @@ class HotReloadUrlInterceptor : public QQmlAbstractUrlInterceptor {
         return url.toString() + "#" + QString::number(counter++);
     }
 };
+#endif
 
 void registerTypesCommon(const QString &testExecutable,
                          const QString &testsPath) {
@@ -118,8 +120,13 @@ void StorybookSetup::registerTypesRemote(const QUrl& versionUrl,
 
 void StorybookSetup::configureEngine(QQmlEngine* engine, bool local)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 11, 0)
     if (local) {
         static HotReloadUrlInterceptor interceptor;
         engine->addUrlInterceptor(&interceptor);
     }
+#else
+    Q_UNUSED(engine)
+    Q_UNUSED(local)
+#endif
 }
